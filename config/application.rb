@@ -39,6 +39,8 @@ module GreytHr
     # Don't generate system test files.
     config.generators.system_tests = nil
 
+    config.generators.test_framework = :rspec
+
     config.time_zone = "UTC"
     config.active_record.default_timezone = :utc
 

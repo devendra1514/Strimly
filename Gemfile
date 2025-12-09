@@ -36,6 +36,16 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "database_cleaner-active_record"
+  gem "shoulda-matchers"
+  gem "bullet"
+  gem "pry-rails"
+  gem "simplecov", require: false
+  gem "byebug"
 end
 
 group :development do
@@ -48,4 +58,4 @@ gem "redis"
 gem "sidekiq"
 gem "sidekiq-scheduler"
 gem "jb"
-gem 'pagy', '~> 43.2'
+gem "pagy", "~> 43.2"
