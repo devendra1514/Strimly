@@ -44,3 +44,8 @@ group :development do
 end
 
 gem "dotenv-rails"
+gem "redis"
+gem "sidekiq"
+gem "sidekiq-scheduler"
+gem "jb"
+gem 'pagy', '~> 43.2'
