@@ -1,0 +1,6 @@
+json = {}
+
+json[:message] = "User created successfully"
+json[:data] = nil
+
+json
