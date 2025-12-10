@@ -1,0 +1,7 @@
+json = {}
+
+json[:success] = false
+
+json[:message] = @message_text || "Forbidden"
+
+json

@@ -1,0 +1,11 @@
+json = {}
+
+json[:success] = false
+
+json[:message] = @message_text || "Unprocessable entity"
+
+json[:errors] = @errors
+
+json[:errors_with_key] = @errors_with_key
+
+json

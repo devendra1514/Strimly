@@ -1,4 +1,4 @@
-class Api::V1::UserService
+class UserService
   def self.create(params)
     user = User.new(params)
     user.save!
