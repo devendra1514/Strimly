@@ -1,7 +1,5 @@
 json = {}
 
-json[:success] = true
-
 json[:message] = "Logout successful"
 
 json
