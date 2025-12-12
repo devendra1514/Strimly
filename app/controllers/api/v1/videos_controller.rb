@@ -1,5 +1,5 @@
 class Api::V1::VideosController < Api::V1::ApiController
-  skip_before_action :authenticate_user!, only: [:generate_presigned_url, :attach]
+  skip_before_action :authenticate_user!, only: [:generate_presigned_url, :attach, :show]
 
   def generate_presigned_url
     blob = ActiveStorage::Blob.create_before_direct_upload!(
@@ -26,6 +26,19 @@ class Api::V1::VideosController < Api::V1::ApiController
     video = Video.new(title: blob.filename, status: :processing)
     video.file.attach(blob)
     video.save!
+    VideoProcessingJob.perform_later(video.id)
     render json: video
+  end
+
+  def show
+    video = Video.find(params[:id])
+    render json: {
+      id: video.id,
+      resolutions: {
+        "480": video.hls_url("480"),
+        "720": video.hls_url("720"),
+        "1080": video.hls_url("1080")
+      }
+    }
   end
 end

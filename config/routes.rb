@@ -15,7 +15,7 @@ Rails.application.routes.draw do
           post :logout
         end
       end
-      resources :videos, only: [] do
+      resources :videos, only: [:show] do
         collection do
           post :generate_presigned_url
           post :attach

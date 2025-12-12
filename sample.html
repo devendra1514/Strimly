@@ -1,0 +1,157 @@
+<video id="video" controls width="640" height="360" preload="metadata"></video>
+
+<select id="qualitySelect" style="margin-top: 10px;">
+  <option value="auto">Auto</option>
+</select>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script>
+  const VIDEO_ID = 27;
+  const API_URL = `http://localhost:3000/api/v1/videos/${VIDEO_ID}`;
+
+  const video = document.getElementById("video");
+  const qualitySelect = document.getElementById("qualitySelect");
+
+  let hls;
+  let resolutions = {};
+
+  // -------------------------------
+  // 1. Fetch video API (resolutions list)
+  // -------------------------------
+  async function loadVideoData() {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    resolutions = data.resolutions;
+
+    setupPlayer();
+  }
+
+  // -------------------------------
+  // 2. Setup HLS Player
+  // -------------------------------
+  function setupPlayer() {
+    if (!Hls.isSupported()) {
+      video.src = resolutions["480"]; // Safari fallback
+      return;
+    }
+
+    hls = new Hls({
+      maxBufferLength: 12,
+      backBufferLength: 1,
+      startLevel: -1,
+      autoStartLoad: true,
+
+      lowLatencyMode: false,
+      progressive: false,
+    });
+
+    hls.attachMedia(video);
+
+    // start from lowest resolution
+    const lowest = Object.keys(resolutions).sort((a, b) => a - b)[0];
+    const firstUrl = resolutions[lowest];
+
+    hls.loadSource(firstUrl);
+
+    // Build dropdown
+    for (const res in resolutions) {
+      const option = document.createElement("option");
+      option.value = res;
+      option.text = `${res}p`;
+      qualitySelect.appendChild(option);
+    }
+
+    // Start video after parsing manifest
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.play();
+    });
+
+    // Smart loading (data saving)
+    video.addEventListener("timeupdate", () => {
+      const buffered = video.buffered;
+      if (!buffered.length) return;
+
+      const gap = buffered.end(0) - video.currentTime;
+      if (gap < 4) {
+        hls.startLoad();
+      } else {
+        hls.stopLoad();
+      }
+    });
+
+    // Prevent duplicate downloads
+    const downloaded = new Set();
+
+    hls.on(Hls.Events.FRAG_LOADED, (e, data) => {
+      const key = `${data.frag.level}-${data.frag.sn}`;
+      if (downloaded.has(key)) {
+        console.log("Duplicate prevented:", key);
+      } else {
+        downloaded.add(key);
+      }
+    });
+
+    // Error handling
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (data.fatal) {
+        switch (data.type) {
+          case Hls.ErrorTypes.NETWORK_ERROR:
+            hls.startLoad();
+            break;
+
+          case Hls.ErrorTypes.MEDIA_ERROR:
+            hls.recoverMediaError();
+            break;
+
+          default:
+            hls.destroy();
+            break;
+        }
+      }
+    });
+  }
+
+  // -------------------------------
+  // 3. Handle manual resolution change
+  // -------------------------------
+  qualitySelect.addEventListener("change", () => {
+    const choice = qualitySelect.value;
+    const currentTime = video.currentTime;
+
+    if (choice === "auto") {
+      hls.currentLevel = -1;
+      return;
+    }
+
+    const newUrl = resolutions[choice];
+
+    // Stop current stream cleanly
+    hls.stopLoad();
+    hls.detachMedia();
+
+    // Create fresh HLS instance switching resolution cleanly
+    hls.destroy();
+    hls = new Hls({
+      maxBufferLength: 12,
+      backBufferLength: 1,
+      startLevel: -1,
+      autoStartLoad: true,
+      lowLatencyMode: false,
+    });
+
+    hls.attachMedia(video);
+    hls.loadSource(newUrl);
+
+    // After manifest parsed → resume from same time
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      video.currentTime = currentTime;
+      video.play();
+    });
+  });
+
+  // -------------------------------
+  // INIT
+  // -------------------------------
+  loadVideoData();
+</script>
