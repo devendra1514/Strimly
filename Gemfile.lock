@@ -159,7 +159,7 @@ GEM
       reline (>= 0.4.2)
     jb (0.8.2)
     jmespath (1.6.2)
-    json (2.17.1)
+    json (2.18.0)
     jwt (3.1.2)
       base64
     language_server-protocol (3.17.0.5)
@@ -207,7 +207,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.18.10-x86_64-linux-musl)
       racc (~> 1.4)
-    pagy (43.2.0)
+    pagy (43.2.1)
       json
       yaml
     parallel (1.27.0)
